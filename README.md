@@ -192,7 +192,7 @@
 
 ### Дальнейшие изменения
 
-После готовности Brev добавьте `BREV_AGENT_URL` и `BREV_AGENT_TOKEN) в Project Settings → Environment Variables Vercel, затем создайте новый deployment. Секреты не добавляйте в README или GitHub. Публичная ссылка на Vercel deployment будет зафиксирована здесь после проверки доступности сайта и API.
+После готовности Brev добавьте `BREV_AGENT_URL` и `BREV_AGENT_TOKEN` в Project Settings → Environment Variables Vercel, затем создайте новый deployment. Секреты не добавляйте в README или GitHub. После успешной проверки добавьте production URL в раздел «Публичный URL» выше.
 
 ## Как запустить локально
 
