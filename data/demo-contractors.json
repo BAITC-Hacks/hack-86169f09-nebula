@@ -1,0 +1,415 @@
+[
+  {
+    "id": "DEMO-001",
+    "anon_name": "Буллма",
+    "categories": [
+      "Ведущий"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 1000000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "корпоратив",
+      "конференция",
+      "юбилей",
+      "день рождения"
+    ],
+    "languages": [
+      "русский",
+      "английский"
+    ],
+    "max_hours": 6.0,
+    "busy_dates": [
+      "2026-10-24",
+      "2026-12-25"
+    ],
+    "description": "Ведущий для корпоративов и деловых форумов."
+  },
+  {
+    "id": "DEMO-002",
+    "anon_name": "Мицури Канроджи",
+    "categories": [
+      "Ведущий"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 650000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "юбилей",
+      "корпоратив"
+    ],
+    "languages": [
+      "русский"
+    ],
+    "max_hours": 8.0,
+    "busy_dates": [
+      "2026-10-03"
+    ],
+    "description": "Профессиональный ведущий и сценарист для праздников."
+  },
+  {
+    "id": "DEMO-003",
+    "anon_name": "Кики",
+    "categories": [
+      "Ведущий"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 900000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "той",
+      "юбилей",
+      "корпоратив"
+    ],
+    "languages": [
+      "казахский",
+      "русский",
+      "английский"
+    ],
+    "max_hours": 10.0,
+    "busy_dates": [
+      "2026-12-25"
+    ],
+    "description": "Ведущий на казахском, русском и английском."
+  },
+  {
+    "id": "DEMO-004",
+    "anon_name": "Хаул",
+    "categories": [
+      "Ведущий"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 1000000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "корпоратив",
+      "конференция",
+      "юбилей",
+      "свадьба"
+    ],
+    "languages": [
+      "русский",
+      "казахский"
+    ],
+    "max_hours": 8.0,
+    "busy_dates": [
+      "2026-12-25"
+    ],
+    "description": "Ведущий, актёр и педагог по актёрскому мастерству."
+  },
+  {
+    "id": "DEMO-005",
+    "anon_name": "Сон Гоку",
+    "categories": [
+      "Ведущий"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 1000000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "той",
+      "корпоратив",
+      "конференция"
+    ],
+    "languages": [
+      "казахский",
+      "русский"
+    ],
+    "max_hours": 10.0,
+    "busy_dates": [
+      "2026-12-25"
+    ],
+    "description": "Двуязычный ведущий для крупных корпоративных событий."
+  },
+  {
+    "id": "DEMO-006",
+    "anon_name": "Джинбей",
+    "categories": [
+      "Ведущий"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 1300000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "корпоратив",
+      "конференция"
+    ],
+    "languages": [
+      "русский",
+      "английский"
+    ],
+    "max_hours": 6.0,
+    "busy_dates": [
+      "2026-12-25"
+    ],
+    "description": "Ведущий технологических форумов и мероприятий брендов."
+  },
+  {
+    "id": "DEMO-007",
+    "anon_name": "Аня Форджер",
+    "categories": [
+      "Ведущий"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 700000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "день рождения",
+      "корпоратив",
+      "юбилей"
+    ],
+    "languages": [
+      "русский"
+    ],
+    "max_hours": 6.0,
+    "busy_dates": [
+      "2026-10-17"
+    ],
+    "description": "Ведущая с программой для взрослой и молодёжной аудитории."
+  },
+  {
+    "id": "DEMO-008",
+    "anon_name": "Куррапика",
+    "categories": [
+      "Ведущий"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 500000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "корпоратив",
+      "конференция",
+      "юбилей"
+    ],
+    "languages": [
+      "русский"
+    ],
+    "max_hours": 6.0,
+    "busy_dates": [
+      "2026-10-15"
+    ],
+    "description": "Ведущий деловых встреч и корпоративов."
+  },
+  {
+    "id": "DEMO-009",
+    "anon_name": "Тони Тони Чоппер",
+    "categories": [
+      "Флорист"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 200000.0,
+    "price_imputed": true,
+    "event_formats": [
+      "свадьба",
+      "корпоратив",
+      "конференция",
+      "юбилей"
+    ],
+    "languages": [
+      "русский"
+    ],
+    "max_hours": null,
+    "busy_dates": [
+      "2026-12-25"
+    ],
+    "description": "Авторское цветочное оформление для мероприятий."
+  },
+  {
+    "id": "DEMO-010",
+    "anon_name": "Тихиро Огино",
+    "categories": [
+      "Флорист"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 250000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "юбилей",
+      "той"
+    ],
+    "languages": [
+      "русский",
+      "казахский"
+    ],
+    "max_hours": null,
+    "busy_dates": [
+      "2026-12-25"
+    ],
+    "description": "Флористика для свадеб и юбилеев."
+  },
+  {
+    "id": "DEMO-011",
+    "anon_name": "Кирито",
+    "categories": [
+      "Флорист"
+    ],
+    "city": "Астана",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 300000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "корпоратив"
+    ],
+    "languages": [
+      "русский",
+      "казахский"
+    ],
+    "max_hours": null,
+    "busy_dates": [
+      "2026-10-15"
+    ],
+    "description": "Цветочное оформление мероприятий в Астане."
+  },
+  {
+    "id": "DEMO-012",
+    "anon_name": "Шинобу Кочо",
+    "categories": [
+      "Банкетный зал"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 2500000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "корпоратив",
+      "юбилей"
+    ],
+    "languages": [
+      "русский",
+      "казахский"
+    ],
+    "max_hours": 10.0,
+    "busy_dates": [
+      "2026-12-31"
+    ],
+    "description": "Банкетный зал с обслуживанием мероприятий."
+  },
+  {
+    "id": "DEMO-013",
+    "anon_name": "Дэмон Слэйер",
+    "categories": [
+      "Банкетный зал"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 3200000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "корпоратив",
+      "конференция"
+    ],
+    "languages": [
+      "русский"
+    ],
+    "max_hours": 12.0,
+    "busy_dates": [
+      "2026-10-15"
+    ],
+    "description": "Площадка для конференций и корпоративов."
+  },
+  {
+    "id": "DEMO-014",
+    "anon_name": "Мегуми",
+    "categories": [
+      "Фотограф"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 450000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "корпоратив",
+      "юбилей"
+    ],
+    "languages": [
+      "русский",
+      "английский"
+    ],
+    "max_hours": 8.0,
+    "busy_dates": [
+      "2026-10-15"
+    ],
+    "description": "Репортажная и портретная съёмка событий."
+  },
+  {
+    "id": "DEMO-015",
+    "anon_name": "Нобара",
+    "categories": [
+      "Фотограф"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 700000.0,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "корпоратив",
+      "конференция"
+    ],
+    "languages": [
+      "русский",
+      "казахский"
+    ],
+    "max_hours": 10.0,
+    "busy_dates": [
+      "2026-10-17"
+    ],
+    "description": "Фотограф для деловых и семейных мероприятий."
+  },
+  {
+    "id": "DEMO-016",
+    "anon_name": "Демо-декоратор",
+    "categories": [
+      "Декоратор"
+    ],
+    "city": "Алматы",
+    "city_imputed": false,
+    "synthetic": true,
+    "price_from_kzt": 350000,
+    "price_imputed": false,
+    "event_formats": [
+      "свадьба",
+      "корпоратив"
+    ],
+    "languages": [
+      "русский",
+      "казахский"
+    ],
+    "max_hours": null,
+    "busy_dates": [],
+    "description": "Синтетический пример декоратора"
+  }
+]

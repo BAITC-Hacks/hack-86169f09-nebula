@@ -40,7 +40,7 @@
             <input id="eventDate" type="date" min="2026-09-23" max="2026-12-31" required />
           </label>
           <label>Бюджет, ₸
-            <input id="budget" type="number" min="1" step="1000" placeholder="Например, 2000000" required />
+            <input id="budget" type="number" min="1" step="any" placeholder="Например, 2000000" required />
           </label>
           <label>Язык <span>необязательно</span>
             <select id="language"></select>
@@ -63,7 +63,7 @@
         <dl id="datasetStats" class="dataset-stats"></dl>
         <input id="datasetInput" type="file" accept=".csv,text/csv" hidden />
         <button id="datasetButton" class="secondary-button full-width" type="button">Подключить CSV-каталог</button>
-        <p class="helper">Ожидается CSV из ТЗ с 13 колонками. Данные проверяются в браузере и никуда не отправляются.</p>
+        <p class="helper">Ожидается CSV из ТЗ с 13 колонками. При поиске каталог передаётся этому серверу для проверки и не сохраняется. Если настроен AI-сервис, ему передаются параметры запроса и факты до трёх выбранных профилей.</p>
       </aside>
     </section>
 
@@ -107,5 +107,6 @@
   </template>
 
   <script src="app.js"></script>
+  <script src="api-client.js"></script>
 </body>
 </html>

@@ -97,7 +97,10 @@ function setDataset(data, origin) {
 }
 
 function normalizeContractor(item) {
-  return Object.fromEntries(REQUIRED_COLUMNS.map(key => [key, String(item[key] ?? "").trim()]));
+  return Object.fromEntries(REQUIRED_COLUMNS.map(key => {
+    const value = item[key];
+    return [key, Array.isArray(value) ? value.join("|") : typeof value === "boolean" ? (value ? "True" : "False") : String(value ?? "").trim()];
+  }));
 }
 
 function parseCsv(text) {
@@ -129,8 +132,11 @@ function parseCsv(text) {
     row.push(cell);
     rows.push(row);
   }
+  if (insideQuotes) throw new Error("Незакрытые кавычки в CSV");
   const headers = (rows.shift() || []).map(value => value.replace(/^\uFEFF/, "").trim());
-  return { headers, data: rows.filter(rowData => rowData.length === headers.length).map(rowData =>
+  if (new Set(headers).size !== headers.length) throw new Error("Повторяющиеся колонки CSV");
+  if (rows.some(rowData => rowData.length !== headers.length)) throw new Error("Число ячеек в строке не совпадает с заголовком");
+  return { headers, data: rows.map(rowData =>
     Object.fromEntries(headers.map((header, index) => [header, rowData[index]]))
   )};
 }
@@ -178,7 +184,15 @@ function findMatches(query) {
 }
 
 function renderState(type, title, description) {
-  resultContainer.innerHTML = '<article class="state-card ' + type + '"><h3>' + title + '</h3><p>' + description + '</p></article>';
+  resultContainer.replaceChildren();
+  const article = document.createElement("article");
+  article.className = "state-card " + type;
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  const paragraph = document.createElement("p");
+  paragraph.textContent = description;
+  article.append(heading, paragraph);
+  resultContainer.append(article);
 }
 
 function renderMatches(result, query) {
@@ -299,6 +313,9 @@ byId("datasetInput").addEventListener("change", async event => {
     datasetError("Не удалось прочитать CSV: " + error.message);
   }
 });
+
+// These embedded fixtures are not a verified organizer catalogue.
+DEMO_CONTRACTORS.forEach(item => { item.synthetic = "True"; });
 
 byId("loadDemoButton").addEventListener("click", () => {
   setDataset(DEMO_CONTRACTORS, "демо-каталог");
