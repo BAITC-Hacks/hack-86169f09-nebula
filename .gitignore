@@ -1,5 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.idea/
 .env
-.env.local
-.vercel
-node_modules
+.env.*
+!.env.example
+*.py[cod]
+*.log
+.vercel/
+node_modules/
 .DS_Store

@@ -1,56 +1,15 @@
-import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { extname, join, normalize, resolve } from "node:path";
-import apiHandler from "./api/match.js";
+// npm start/dev launch the same FastAPI application as python run.py.
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const root = process.cwd();
-const port = Number(process.env.PORT || 3000);
-const mimeTypes = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".csv": "text/csv; charset=utf-8",
-  ".json": "application/json; charset=utf-8"
-};
-
-function createApiResponse(response) {
-  response.status = (statusCode) => {
-    response.statusCode = statusCode;
-    return response;
-  };
-  response.json = (body) => {
-    response.setHeader("Content-Type", "application/json; charset=utf-8");
-    response.end(JSON.stringify(body));
-  };
-  return response;
-}
-
-createServer(async (request, response) => {
-  const requestUrl = new URL(request.url, "http://localhost:" + port);
-
-  if (requestUrl.pathname === "/api/match") {
-    request.query = Object.fromEntries(requestUrl.searchParams);
-    await apiHandler(request, createApiResponse(response));
-    return;
-  }
-
-  const relativePath = requestUrl.pathname === "/" ? "index.html" : requestUrl.pathname.slice(1);
-  const assetPath = resolve(root, normalize(relativePath));
-  if (!assetPath.startsWith(root + "\\") && assetPath !== join(root, "index.html")) {
-    response.statusCode = 403;
-    response.end("Forbidden");
-    return;
-  }
-
-  try {
-    const content = await readFile(assetPath);
-    response.statusCode = 200;
-    response.setHeader("Content-Type", mimeTypes[extname(assetPath)] || "application/octet-stream");
-    response.end(content);
-  } catch {
-    response.statusCode = 404;
-    response.end("Not found");
-  }
-}).listen(port, () => {
-  console.log("EventMatch AI открыт: http://localhost:" + port);
+const child = spawn(process.env.PYTHON || 'python', ['run.py'], {
+  cwd: fileURLToPath(new URL('.', import.meta.url)),
+  stdio: 'inherit',
+  env: process.env
 });
+child.on('error', () => {
+  console.error('Python not found. Activate .venv, install requirements.txt, then run python run.py.');
+  process.exitCode = 1;
+});
+child.on('exit', code => { process.exitCode = code ?? 1; });
+for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => child.kill(signal));

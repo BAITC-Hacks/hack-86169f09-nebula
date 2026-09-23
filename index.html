@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EventMatch AI — подбор подрядчиков</title>
   <meta name="description" content="Объяснимый подбор event-подрядчиков из проверенного каталога." />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=integration-1" />
 </head>
 <body>
   <header class="site-header">
@@ -40,7 +40,7 @@
             <input id="eventDate" type="date" min="2026-09-23" max="2026-12-31" required />
           </label>
           <label>Бюджет, ₸
-            <input id="budget" type="number" min="1" step="1000" placeholder="Например, 2000000" required />
+            <input id="budget" type="number" min="1" step="any" placeholder="Например, 2000000" required />
           </label>
           <label>Язык <span>необязательно</span>
             <select id="language"></select>
@@ -58,12 +58,12 @@
 
       <aside class="checkpoint-panel" aria-labelledby="checkpointTitle">
         <p class="eyebrow">CHECKPOINT ДАННЫХ</p>
-        <h2 id="checkpointTitle">Каталог готов к подключению</h2>
+        <h2 id="checkpointTitle">Каталог подрядчиков</h2>
         <p id="datasetSummary">Загружен демо-каталог для разработки интерфейса.</p>
         <dl id="datasetStats" class="dataset-stats"></dl>
         <input id="datasetInput" type="file" accept=".csv,text/csv" hidden />
         <button id="datasetButton" class="secondary-button full-width" type="button">Подключить CSV-каталог</button>
-        <p class="helper">Ожидается CSV из ТЗ с 13 колонками. Данные проверяются в браузере и никуда не отправляются.</p>
+        <p class="helper">Каталог загружается с сервера. Можно выбрать свой CSV с 13 колонками: он будет использоваться только для ваших поисков. Если подключён OpenAI, ему передаются параметры запроса и факты до трёх выбранных профилей.</p>
       </aside>
     </section>
 
@@ -106,6 +106,7 @@
     </article>
   </template>
 
-  <script src="app.js"></script>
+  <script src="api-client.js?v=integration-1"></script>
+  <script src="app.js?v=integration-1"></script>
 </body>
 </html>
