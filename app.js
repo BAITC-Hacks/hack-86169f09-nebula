@@ -384,6 +384,21 @@ byId("loadDemoButton").addEventListener("click", () => {
   byId("datasetSummary").className = "";
 });
 
-setDataset(DEMO_CONTRACTORS, "демо-каталог");
+async function loadBundledCatalog() {
+  try {
+    const response = await fetch("data/contractors.csv", { cache: "no-store" });
+    if (!response.ok) throw new Error("Не удалось загрузить каталог.");
+    const { headers, data } = parseCsv(await response.text());
+    const missing = REQUIRED_COLUMNS.filter((column) => !headers.includes(column));
+    if (missing.length) throw new Error("В каталоге нет обязательных полей.");
+    setDataset(data, "data/contractors.csv", true);
+    byId("datasetSummary").className = "";
+  } catch (error) {
+    datasetError("Полный каталог пока не загружен. Доступен демо-каталог.");
+  }
+}
+
+setDataset(DEMO_CONTRACTORS, "демо-каталог", false);
 renderDemoScenarios();
 dateInput.value = "2026-10-15";
+loadBundledCatalog();
