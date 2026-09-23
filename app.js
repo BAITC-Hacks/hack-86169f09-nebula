@@ -32,6 +32,7 @@ const DEMO_SCENARIOS = [
 
 let contractors = [];
 let datasetOrigin = "демо-каталог";
+let serverCatalogAvailable = false;
 const byId = id => document.getElementById(id);
 const split = value => String(value || "").split("|").map(item => item.trim()).filter(Boolean);
 const formatMoney = value => new Intl.NumberFormat("ru-RU").format(Number(value || 0)) + " ₸";
@@ -89,9 +90,10 @@ function renderDatasetStats() {
   byId("datasetSummary").textContent = "Источник: " + datasetOrigin + ". Поля и календарь занятости прошли проверку.";
 }
 
-function setDataset(data, origin) {
+function setDataset(data, origin, serverAvailable = false) {
   contractors = data.map(normalizeContractor).filter(item => item.id && item.anon_name && item.city);
   datasetOrigin = origin;
+  serverCatalogAvailable = serverAvailable;
   populateInputs();
   renderDatasetStats();
 }
@@ -213,7 +215,72 @@ function renderMatches(result, query) {
   resultMeta.textContent = "Порядок фиксирован правилами подбора.";
 }
 
-function submitSearch() {
+function exclusionText(excluded) {
+  if (!excluded || !excluded.length) return "Все кандидаты прошли условия поиска.";
+  return excluded.map((item) => item.reason + ": " + item.count).join("; ") + ".";
+}
+
+function renderServerMatches(payload) {
+  const exclusionSummary = exclusionText(payload.excluded);
+  resultContainer.innerHTML = "";
+  payload.results.forEach((item) => {
+    const fragment = byId("contractorTemplate").content.cloneNode(true);
+    fragment.querySelector(".category-label").textContent = item.category;
+    fragment.querySelector(".score-label").textContent = "Подходит";
+    fragment.querySelector(".contractor-name").textContent = item.name;
+    fragment.querySelector(".contractor-meta").textContent =
+      item.city + " · от " + formatMoney(item.price_from_kzt) + " · " +
+      (item.max_hours ? "до " + item.max_hours + " ч" : "длительность не ограничена");
+    fragment.querySelector(".contractor-explanation").textContent = item.explanation;
+    fragment.querySelector(".exclusion-summary").textContent = exclusionSummary;
+
+    const tags = [
+      ...item.languages.map((language) => ({ text: language, warn: false })),
+      item.data_quality.synthetic ? { text: "синтетический профиль", warn: true } : null,
+      item.data_quality.city_imputed ? { text: "город восстановлен", warn: true } : null,
+      item.data_quality.price_imputed ? { text: "цена восстановлена", warn: true } : null
+    ].filter(Boolean);
+
+    const tagList = fragment.querySelector(".tag-list");
+    tags.forEach(({ text, warn }) => {
+      const tag = document.createElement("span");
+      tag.className = "tag" + (warn ? " warn" : "");
+      tag.textContent = text;
+      tagList.append(tag);
+    });
+    resultContainer.append(fragment);
+  });
+  resultTitle.textContent = "Подобрали " + payload.results.length + " из " + payload.total_matches + " подходящих";
+  resultMeta.textContent = "Результат рассчитан сервером по каталогу из " + payload.catalog_profiles + " профилей.";
+}
+
+function renderServerResponse(payload) {
+  if (payload.status === "matched") {
+    renderServerMatches(payload);
+    return;
+  }
+  if (payload.status === "category_not_found") {
+    resultTitle.textContent = "В этом городе такой категории нет";
+    resultMeta.textContent = "Проверили " + payload.catalog_profiles + " профилей каталога.";
+    renderState("no-city", "Категория не представлена", payload.message);
+    return;
+  }
+  resultTitle.textContent = "Кандидаты есть, но условия не пройдены";
+  resultMeta.textContent = "Категория найдена в каталоге.";
+  renderState("no-match", "Подходящих подрядчиков нет", payload.message + " Причины: " + exclusionText(payload.excluded));
+}
+
+async function requestServerMatch(query) {
+  const parameters = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== "" && value !== null && value !== undefined) parameters.set(key, value);
+  });
+  const response = await fetch("/api/match?" + parameters.toString());
+  if (!response.ok) throw new Error("API вернул ошибку " + response.status);
+  return response.json();
+}
+
+async function submitSearch() {
   const query = {
     city: cityInput.value,
     category: categoryInput.value,
@@ -224,6 +291,18 @@ function submitSearch() {
     duration: durationInput.value
   };
   if (!query.city || !query.category || !query.eventFormat || !query.eventDate || !query.budget) return;
+
+  if (serverCatalogAvailable) {
+    try {
+      renderState("", "Подбираем подрядчиков", "Проверяем доступность, бюджет и параметры каталога.");
+      const payload = await requestServerMatch(query);
+      renderServerResponse(payload);
+      return;
+    } catch (error) {
+      resultMeta.textContent = "Сервер недоступен, применён локальный режим.";
+    }
+  }
+
   const result = findMatches(query);
   if (!result.base.length) {
     resultTitle.textContent = "В этом городе такой категории нет";
@@ -292,7 +371,7 @@ byId("datasetInput").addEventListener("change", async event => {
       datasetError("CSV не подключён: в файле нет профилей.");
       return;
     }
-    setDataset(data, file.name);
+    setDataset(data, file.name, false);
     byId("datasetSummary").className = "";
     submitSearch();
   } catch (error) {
@@ -301,7 +380,7 @@ byId("datasetInput").addEventListener("change", async event => {
 });
 
 byId("loadDemoButton").addEventListener("click", () => {
-  setDataset(DEMO_CONTRACTORS, "демо-каталог");
+  setDataset(DEMO_CONTRACTORS, "демо-каталог", false);
   byId("datasetSummary").className = "";
 });
 
