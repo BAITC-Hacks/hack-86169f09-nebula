@@ -3,5 +3,10 @@ __pycache__/
 .pytest_cache/
 .idea/
 .env
+.env.*
+!.env.example
 *.py[cod]
 *.log
+.vercel/
+node_modules/
+.DS_Store

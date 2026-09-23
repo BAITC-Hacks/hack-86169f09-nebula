@@ -1,9 +1,13 @@
-/* Backend integration. Existing standalone file:// UI remains usable separately. */
-if (location.protocol !== "file:") {
+/* Same-origin FastAPI transport, called explicitly by app.js. */
   let searchController;
   let searchRevision = 0;
 
-  submitSearch = async function () {
+  function cancelBackendSearch() {
+    searchRevision++;
+    if (searchController) searchController.abort();
+  }
+
+  async function submitBackendSearch() {
     const revision = ++searchRevision;
     if (searchController) searchController.abort();
     searchController = new AbortController();
@@ -16,9 +20,11 @@ if (location.protocol !== "file:") {
       budget: Number(budgetInput.value),
       language: languageInput.value || null,
       duration: durationInput.value ? Number(durationInput.value) : null,
-      contractors,
       use_ai: true
     };
+    // Ordinary searches use the server's validated CSV, without resending it.
+    // Uploaded CSV/demo data stays specific to this visitor's request.
+    if (!serverCatalogAvailable) payload.contractors = contractors;
     resultTitle.textContent = "Проверяем условия…";
     resultMeta.textContent = "";
     resultContainer.replaceChildren();
@@ -52,13 +58,13 @@ if (location.protocol !== "file:") {
         fragment.querySelector(".contractor-explanation").textContent = explanation;
         fragment.querySelector(".exclusion-summary").textContent = result.message
           + " Один кандидат может не пройти несколько условий.";
-        const tags = [...item.languages];
-        if (item.synthetic) tags.push("синтетический профиль");
-        if (item.city_imputed) tags.push("город восстановлен");
-        if (item.price_imputed) tags.push("цена восстановлена");
-        for (const text of tags) {
+        const tags = item.languages.map(text => ({ text, warn: false }));
+        if (item.synthetic) tags.push({ text: "синтетический профиль", warn: true });
+        if (item.city_imputed) tags.push({ text: "город восстановлен", warn: true });
+        if (item.price_imputed) tags.push({ text: "цена восстановлена", warn: true });
+        for (const { text, warn } of tags) {
           const tag = document.createElement("span");
-          tag.className = "tag";
+          tag.className = "tag" + (warn ? " warn" : "");
           tag.textContent = text;
           fragment.querySelector(".tag-list").append(tag);
         }
@@ -69,21 +75,19 @@ if (location.protocol !== "file:") {
       resultTitle.textContent = "Не удалось выполнить поиск";
       renderState("error", "Проверьте данные и сервер", error.message);
     }
-  };
+  }
 
-  byId("resetButton").addEventListener("click", () => {
-    searchRevision++;
-    if (searchController) searchController.abort();
-  });
-
-  // Load the actual server catalogue without changing another user's dataset.
-  let datasetTouched = false;
-  byId("datasetInput").addEventListener("change", () => { datasetTouched = true; });
-  byId("loadDemoButton").addEventListener("click", () => { datasetTouched = true; });
-  fetch("/api/catalog").then(response => {
-    if (!response.ok) throw new Error("Каталог сервера недоступен");
-    return response.json();
-  }).then(data => {
-    if (!datasetTouched) setDataset(data.items, data.source);
-  }).catch(error => datasetError(error.message + ". Запустите сайт через python run.py."));
-}
+  async function loadServerCatalog() {
+    const revision = datasetRevision;
+    try {
+      const response = await fetch("/api/catalog", { cache: "no-store" });
+      if (!response.ok) throw new Error("Каталог сервера недоступен");
+      const data = await response.json();
+      if (revision === datasetRevision) {
+        setDataset(data.items, data.source, true);
+        byId("datasetSummary").className = "";
+      }
+    } catch (error) {
+      if (revision === datasetRevision) datasetError(error.message + ". Обновите страницу после запуска сервера.");
+    }
+  }

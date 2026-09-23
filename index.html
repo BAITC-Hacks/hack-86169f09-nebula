@@ -58,12 +58,12 @@
 
       <aside class="checkpoint-panel" aria-labelledby="checkpointTitle">
         <p class="eyebrow">CHECKPOINT ДАННЫХ</p>
-        <h2 id="checkpointTitle">Каталог готов к подключению</h2>
+        <h2 id="checkpointTitle">Каталог подрядчиков</h2>
         <p id="datasetSummary">Загружен демо-каталог для разработки интерфейса.</p>
         <dl id="datasetStats" class="dataset-stats"></dl>
         <input id="datasetInput" type="file" accept=".csv,text/csv" hidden />
         <button id="datasetButton" class="secondary-button full-width" type="button">Подключить CSV-каталог</button>
-        <p class="helper">Ожидается CSV из ТЗ с 13 колонками. При поиске каталог передаётся этому серверу для проверки и не сохраняется. Если настроен AI-сервис, ему передаются параметры запроса и факты до трёх выбранных профилей.</p>
+        <p class="helper">Каталог загружается с сервера. Можно выбрать свой CSV с 13 колонками: он будет использоваться только для ваших поисков. Если подключён OpenAI, ему передаются параметры запроса и факты до трёх выбранных профилей.</p>
       </aside>
     </section>
 
@@ -106,7 +106,7 @@
     </article>
   </template>
 
-  <script src="app.js"></script>
   <script src="api-client.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

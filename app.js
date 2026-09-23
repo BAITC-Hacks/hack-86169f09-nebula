@@ -32,6 +32,8 @@ const DEMO_SCENARIOS = [
 
 let contractors = [];
 let datasetOrigin = "демо-каталог";
+let serverCatalogAvailable = false;
+let datasetRevision = 0;
 const byId = id => document.getElementById(id);
 const split = value => String(value || "").split("|").map(item => item.trim()).filter(Boolean);
 const formatMoney = value => new Intl.NumberFormat("ru-RU").format(Number(value || 0)) + " ₸";
@@ -89,11 +91,17 @@ function renderDatasetStats() {
   byId("datasetSummary").textContent = "Источник: " + datasetOrigin + ". Поля и календарь занятости прошли проверку.";
 }
 
-function setDataset(data, origin) {
+function setDataset(data, origin, serverAvailable = false) {
+  cancelBackendSearch();
+  datasetRevision++;
+  serverCatalogAvailable = serverAvailable;
   contractors = data.map(normalizeContractor).filter(item => item.id && item.anon_name && item.city);
   datasetOrigin = origin;
   populateInputs();
   renderDatasetStats();
+  resultTitle.textContent = "Введите параметры поиска";
+  resultMeta.textContent = "";
+  resultContainer.replaceChildren();
 }
 
 function normalizeContractor(item) {
@@ -227,7 +235,9 @@ function renderMatches(result, query) {
   resultMeta.textContent = "Порядок фиксирован правилами подбора.";
 }
 
-function submitSearch() {
+async function submitSearch() {
+  if (location.protocol !== "file:") return submitBackendSearch();
+  if (!form.reportValidity()) return;
   const query = {
     city: cityInput.value,
     category: categoryInput.value,
@@ -285,6 +295,7 @@ form.addEventListener("submit", event => {
 });
 
 byId("resetButton").addEventListener("click", () => {
+  cancelBackendSearch();
   form.reset();
   resultTitle.textContent = "Введите параметры поиска";
   resultMeta.textContent = "";
@@ -322,6 +333,8 @@ byId("loadDemoButton").addEventListener("click", () => {
   byId("datasetSummary").className = "";
 });
 
-setDataset(DEMO_CONTRACTORS, "демо-каталог");
+setDataset(location.protocol === "file:" ? DEMO_CONTRACTORS : [],
+  location.protocol === "file:" ? "демо-каталог" : "загрузка каталога сервера");
 renderDemoScenarios();
 dateInput.value = "2026-10-15";
+if (location.protocol !== "file:") loadServerCatalog();

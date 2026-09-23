@@ -13,7 +13,7 @@ from .search import search
 
 
 def create_app(catalog_path=None):
-    path = Path(catalog_path or os.getenv("CONTRACTORS_PATH", ROOT / "data" / "demo-contractors.json"))
+    path = Path(catalog_path or os.getenv("CONTRACTORS_PATH", ROOT / "data" / "contractors.csv"))
     if not path.is_absolute():
         path = ROOT / path
 

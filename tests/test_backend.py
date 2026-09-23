@@ -231,3 +231,30 @@ def test_provider_key_is_not_sent_to_custom_url(client, monkeypatch):
         raise AssertionError("Unsupported providers must not receive keys")
     monkeypatch.setattr(ai.httpx, "post", unexpected)
     assert lookup(client, use_ai=True)["ai_error"] == "not_configured"
+
+
+def test_team_catalog_integration(monkeypatch):
+    monkeypatch.delenv("CONTRACTORS_PATH", raising=False)
+    with TestClient(create_app()) as client:
+        catalog = client.get("/api/catalog").json()
+        assert catalog["source"] == "contractors.csv"
+        assert len(catalog["items"]) == 66
+        cases = [({}, "matched", 3),
+                 ({"event_date": "2026-12-25"}, "matched", 3),
+                 ({"category": "Флорист", "event_format": "свадьба", "budget": 1000000}, "matched", 2),
+                 ({"city": "Астана", "category": "Декоратор"}, "no_category", 0),
+                 ({"city": "Астана", "category": "Флорист", "event_format": "свадьба"}, "no_match", 0)]
+        results = []
+        for changes, status, count in cases:
+            result = lookup(client, **changes)
+            assert result["dataset_source"] == "contractors.csv"
+            assert result["status"] == status and len(result["results"]) == count
+            assert result == lookup(client, **changes)
+            results.append(result)
+        assert results[0]["results"] != results[1]["results"]
+        assert results[0]["results"][0]["contractor"]["id"] == "HK-44923"
+        assert not results[0]["results"][0]["contractor"]["synthetic"]
+        page = client.get("/").text
+        assert page.index('src="api-client.js"') < page.index('src="app.js"')
+        for path in ("/server.js", "/data/contractors.csv", "/.env.local"):
+            assert client.get(path).status_code == 404
