@@ -1,0 +1,12 @@
+services:
+  eventmatch:
+    build: .
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      AI_PROVIDER: nvidia
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      NVIDIA_MODEL: ${NVIDIA_MODEL:-nvidia/nemotron-3-super-120b-a12b}
+      HOST: 0.0.0.0
+      PORT: "8001"
+    restart: unless-stopped

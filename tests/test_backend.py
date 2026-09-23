@@ -17,6 +17,8 @@ QUERY = dict(city="Алматы", category="Ведущий", event_format="ко�
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.delenv("AI_API_URL", raising=False)
+    monkeypatch.delenv("AI_PROVIDER", raising=False)
+    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
     with TestClient(create_app(ROOT / "data/demo-contractors.json")) as c:
         yield c
 
@@ -148,3 +150,52 @@ def test_ui_and_no_private_files(client):
         assert client.get(path).status_code == 200
     for path in ("/.env", "/.git/config", "/backend/main.py"):
         assert client.get(path).status_code == 404
+
+
+def test_nvidia_protocol_and_source_validation(client, monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER", "nvidia")
+    monkeypatch.setenv("NVIDIA_API_KEY", "test-only-placeholder")
+    captured = {}
+    class Response:
+        content = b'{}'
+        def __init__(self, facts): self.facts = facts
+        def raise_for_status(self): pass
+        def json(self):
+            return {"choices": [{"message": {"content": json.dumps({"selections": {
+                cid: ["languages", "duration"] for cid in self.facts}})}}]}
+    def post(url, **kwargs):
+        captured.update(url=url, **kwargs)
+        payload = json.loads(kwargs["json"]["messages"][1]["content"])
+        assert "contractors" not in payload["query"]
+        return Response(payload["facts"])
+    monkeypatch.setattr(ai.httpx, "post", post)
+    result = lookup(client, use_ai=True)
+    assert result["ai_provider"] == "nvidia"
+    assert result["ai_model"] == "nvidia/nemotron-3-super-120b-a12b"
+    assert captured["url"] == "https://integrate.api.nvidia.com/v1/chat/completions"
+    assert captured["headers"]["Authorization"] == "Bearer test-only-placeholder"
+    assert "test-only-placeholder" not in json.dumps(result)
+    assert client.get("/api/health").json()["ai_configured"]
+
+
+@pytest.mark.parametrize("data", [{"choices": []}, {"choices": [{"message": {"content": "not JSON"}}]},
+                                  {"choices": [{"message": {"content": '{"selections":{"invented":["a","b"]}}'}}]}])
+def test_nvidia_malformed_response_fallback(client, monkeypatch, data):
+    monkeypatch.setenv("AI_PROVIDER", "nvidia")
+    monkeypatch.setenv("NVIDIA_API_KEY", "test-only-placeholder")
+    class Response:
+        content = b'{}'
+        def raise_for_status(self): pass
+        def json(self): return data
+    monkeypatch.setattr(ai.httpx, "post", lambda *a, **kw: Response())
+    result = lookup(client, use_ai=True)
+    assert result["explanation_mode"] == "template" and result["warning"]
+
+
+def test_nvidia_missing_key_does_not_make_request(client, monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER", "nvidia")
+    def unexpected(*args, **kwargs):
+        raise AssertionError("No network call is allowed without the key")
+    monkeypatch.setattr(ai.httpx, "post", unexpected)
+    assert lookup(client, use_ai=True)["explanation_mode"] == "template"
+    assert not client.get("/api/health").json()["ai_configured"]
