@@ -171,28 +171,38 @@
 
 ## Деплой в Vercel
 
-Репозиторий GitHub остаётся главным источником кода. Vercel публикует сайт и API; он не заменяет GitHub. Подключайте Vercel к репозиторию `BAITC-Hacks/hack-86169f09-nebula`.
+GitHub остаётся главным источником кода, Vercel размещает сайт и API. Репозиторий проекта: `BAITC-Hacks/hack-86169f09-nebula`.
 
 ### Настройки проекта
 
 - Root Directory: корень репозитория.
-- Framework Preset: Other.
-- Build Command: пусто.
-- Output Directory: пусто / значение по умолчанию.
-- Install Command: пусто; приложение не использует npm-пакеты.
-- Переменные окружения: пока не нужны для обычного поиска.
+- Framework Preset: Other (`framework: null` в `vercel.json`).
+- Build Command: пустая команда; сайт состоит из HTML/CSS/JS без сборщика.
+- Output Directory: корень репозитория.
+- Vercel Functions: `/api/match.js` с CSV-каталогом из `data/contractors.csv`.
+- Переменные окружения: rule-based поиск в `/api/match` не требует ключей.
 
-Файл `vercel.json` включает CSV в серверную функцию `api/match.js`. Файл `server.js` используется для локального запуска; Vercel автоматически публикует содержимое `/api` как Node.js Functions, а корневые HTML/CSS/JS-файлы — как сайт.
+`server.js` нужен для локального запуска. `vercel build --yes --target preview` локально собирает корректный Build Output: статический интерфейс, Node.js Function `/api/match` и CSV-каталог.
 
-В Vercel откройте Add New → Project → Import Git Repository, разрешите доступ к приватному репозиторию и выберите `BAITC-Hacks/hack-86169f09-nebula). Проверьте настройки выше и нажмите Deploy. После подключения GitHub новые коммиты в `main` будут обновлять production deployment; ветки и pull request previews можно использовать для предварительной проверки.
+### Текущий статус — 23 сентября 2026
 
-Проверьте Preview URL до использования Production URL. Откройте сайт, выполните запрос через форму и проверьте `/api/match`: ответ должен содержать `catalog_profiles: 66` и одно из состояний `matched`, `category_not_found` или `no_match`. Повтор одинакового запроса должен возвращать карточки в том же порядке. Демо-сценарии есть в форме.
+- Проект `eventmatch-ai` создан в Vercel, но его workspace использует план Hobby.
+- Vercel заблокировал Preview-деплой с причиной: автор Git-коммита не имеет права создавать deployments для проекта.
+- Репозиторий приватный и находится в GitHub-организации `BAITC-Hacks`. Vercel Hobby не поддерживает deployments из приватного репозитория GitHub-организации. См. [официальные правила Vercel для приватных Git-репозиториев](https://vercel.com/docs/git#deploying-private-git-repositories).
+- Production URL, созданный первым неудачным деплоем, пока не работает: запрос к серверу возвращает `FUNCTION_INVOCATION_FAILED`. Не используйте эту ссылку как демо.
 
-**Публичный URL:** будет добавлен после успешного деплоя и проверки сайта/API. Пока Vercel deployment для этого репозитория не подтверждён.
+**Рабочий публичный URL:** пока отсутствует. Не считать деплой завершённым, пока Preview и Production не пройдут проверку.
+
+### Что нужно решить для публикации
+
+1. Сохранить репозиторий приватным и перевести проект в Vercel Pro; затем подключить GitHub-организацию, выдать Vercel доступ к репозиторию и добавить авторов коммитов в команду Vercel.
+2. Открыть репозиторий для всех. Это сделает публичными исходный код и все данные, хранящиеся в GitHub; выбирайте этот вариант только если команда согласна на такую публикацию.
+
+После устранения ограничения создайте Preview deployment, проверьте сайт и `/api/match`, затем публикуйте Production URL. Проверка API должна показать `catalog_profiles: 66` и одно из состояний `matched`, `category_not_found` или `no_match`. Одинаковые запросы должны возвращать карточки в том же порядке.
 
 ### Дальнейшие изменения
 
-После готовности Brev добавьте `BREV_AGENT_URL` и `BREV_AGENT_TOKEN` в Project Settings → Environment Variables Vercel, затем создайте новый deployment. Секреты не добавляйте в README или GitHub. После успешной проверки добавьте production URL в раздел «Публичный URL» выше.
+После готовности Brev добавьте `BREV_AGENT_URL` и `BREV_AGENT_TOKEN` в Project Settings → Environment Variables Vercel, затем создайте новый deployment. Секреты не добавляйте в README или GitHub. После успешной проверки впишите production URL выше.
 
 ## Как запустить локально
 
