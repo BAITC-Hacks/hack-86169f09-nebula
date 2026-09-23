@@ -46,19 +46,19 @@ def create_app(catalog_path=None):
 
     @app.get("/", include_in_schema=False)
     def page():
-        return FileResponse(ROOT / "index.html")
+        return FileResponse(ROOT / "index.html", headers={"Cache-Control": "no-cache"})
 
     @app.get("/app.js", include_in_schema=False)
     def script():
-        return FileResponse(ROOT / "app.js", media_type="text/javascript")
+        return FileResponse(ROOT / "app.js", media_type="text/javascript", headers={"Cache-Control": "no-cache"})
 
     @app.get("/api-client.js", include_in_schema=False)
     def client_script():
-        return FileResponse(ROOT / "api-client.js", media_type="text/javascript")
+        return FileResponse(ROOT / "api-client.js", media_type="text/javascript", headers={"Cache-Control": "no-cache"})
 
     @app.get("/styles.css", include_in_schema=False)
     def styles():
-        return FileResponse(ROOT / "styles.css", media_type="text/css")
+        return FileResponse(ROOT / "styles.css", media_type="text/css", headers={"Cache-Control": "no-cache"})
 
     return app
 

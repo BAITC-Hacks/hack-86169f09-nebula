@@ -255,6 +255,8 @@ def test_team_catalog_integration(monkeypatch):
         assert results[0]["results"][0]["contractor"]["id"] == "HK-44923"
         assert not results[0]["results"][0]["contractor"]["synthetic"]
         page = client.get("/").text
-        assert page.index('src="api-client.js"') < page.index('src="app.js"')
+        assert page.index('src="api-client.js?v=') < page.index('src="app.js?v=')
+        for path in ("/", "/app.js?v=integration-1", "/api-client.js?v=integration-1"):
+            assert client.get(path).headers["cache-control"] == "no-cache"
         for path in ("/server.js", "/data/contractors.csv", "/.env.local"):
             assert client.get(path).status_code == 404
