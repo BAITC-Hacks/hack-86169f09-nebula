@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from .ai import configured, enhance
+from .ai import configured, enhance, provider
 from .catalog import ROOT, load_catalog
 from .models import SearchQuery, SearchRequest
 from .search import search
@@ -30,7 +30,7 @@ def create_app(catalog_path=None):
     @app.get("/api/health")
     def health():
         return {"status": "ok", "profiles": len(app.state.catalog), "ai_configured": configured(),
-                "ai_provider": os.getenv("AI_PROVIDER", "gateway")}
+                "ai_provider": provider()}
 
     @app.get("/api/catalog")
     def catalog():

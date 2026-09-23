@@ -18,7 +18,7 @@ QUERY = dict(city="Алматы", category="Ведущий", event_format="ко�
 def client(monkeypatch):
     monkeypatch.delenv("AI_API_URL", raising=False)
     monkeypatch.delenv("AI_PROVIDER", raising=False)
-    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     with TestClient(create_app(ROOT / "data/demo-contractors.json")) as c:
         yield c
 
@@ -121,6 +121,7 @@ def test_ranking_ties_ignore_file_order(client):
 
 def test_ai_missing_and_invalid(client, monkeypatch):
     assert lookup(client, use_ai=True)["explanation_mode"] == "template"
+    monkeypatch.setenv("AI_PROVIDER", "gateway")
     monkeypatch.setenv("AI_API_URL", "https://example.invalid/facts")
     class Response:
         content = b'{}'
@@ -132,6 +133,7 @@ def test_ai_missing_and_invalid(client, monkeypatch):
 
 
 def test_ai_valid_fact_selection_and_order(client, monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER", "gateway")
     monkeypatch.setenv("AI_API_URL", "https://example.invalid/facts")
     class Response:
         content = b'{}'
@@ -152,37 +154,44 @@ def test_ui_and_no_private_files(client):
         assert client.get(path).status_code == 404
 
 
-def test_nvidia_protocol_and_source_validation(client, monkeypatch):
-    monkeypatch.setenv("AI_PROVIDER", "nvidia")
-    monkeypatch.setenv("NVIDIA_API_KEY", "test-only-placeholder")
+def test_openai_protocol_and_source_validation(client, monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER", "openai")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-only-placeholder")
     captured = {}
     class Response:
         content = b'{}'
         def __init__(self, facts): self.facts = facts
         def raise_for_status(self): pass
         def json(self):
-            return {"choices": [{"message": {"content": json.dumps({"selections": {
-                cid: ["languages", "duration"] for cid in self.facts}})}}]}
+            return {"status": "completed", "output": [{"type": "message", "content": [{"type": "output_text", "text": json.dumps({"selections": {
+                cid: ["languages", "duration"] for cid in self.facts}})}]}]}
     def post(url, **kwargs):
         captured.update(url=url, **kwargs)
-        payload = json.loads(kwargs["json"]["messages"][1]["content"])
+        payload = json.loads(kwargs["json"]["input"])
         assert "contractors" not in payload["query"]
         return Response(payload["facts"])
     monkeypatch.setattr(ai.httpx, "post", post)
     result = lookup(client, use_ai=True)
-    assert result["ai_provider"] == "nvidia"
-    assert result["ai_model"] == "nvidia/nemotron-3-super-120b-a12b"
-    assert captured["url"] == "https://integrate.api.nvidia.com/v1/chat/completions"
+    assert result["ai_provider"] == "openai"
+    assert result["ai_model"] == "gpt-4.1-mini"
+    assert captured["json"]["store"] is False
+    assert captured["json"]["text"]["format"]["strict"] is True
+    assert captured["url"] == "https://api.openai.com/v1/responses"
     assert captured["headers"]["Authorization"] == "Bearer test-only-placeholder"
     assert "test-only-placeholder" not in json.dumps(result)
     assert client.get("/api/health").json()["ai_configured"]
 
 
-@pytest.mark.parametrize("data", [{"choices": []}, {"choices": [{"message": {"content": "not JSON"}}]},
-                                  {"choices": [{"message": {"content": '{"selections":{"invented":["a","b"]}}'}}]}])
-def test_nvidia_malformed_response_fallback(client, monkeypatch, data):
-    monkeypatch.setenv("AI_PROVIDER", "nvidia")
-    monkeypatch.setenv("NVIDIA_API_KEY", "test-only-placeholder")
+@pytest.mark.parametrize("data", [
+    {"status": "incomplete", "output": []},
+    {"status": "completed", "output": []},
+    {"status": "completed", "output": [{"type":"message", "content":[{"type":"refusal","refusal":"no"}]}]},
+    {"status": "completed", "output": [{"type":"message", "content":[{"type":"output_text","text":"not JSON"}]}]},
+    {"status": "completed", "output": [{"type":"message", "content":[{"type":"output_text","text":'{"selections":{"invented":["a","b"]}}'}]}]},
+])
+def test_openai_malformed_response_fallback(client, monkeypatch, data):
+    monkeypatch.setenv("AI_PROVIDER", "openai")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-only-placeholder")
     class Response:
         content = b'{}'
         def raise_for_status(self): pass
@@ -192,10 +201,33 @@ def test_nvidia_malformed_response_fallback(client, monkeypatch, data):
     assert result["explanation_mode"] == "template" and result["warning"]
 
 
-def test_nvidia_missing_key_does_not_make_request(client, monkeypatch):
-    monkeypatch.setenv("AI_PROVIDER", "nvidia")
+def test_openai_missing_key_does_not_make_request(client, monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER", "openai")
     def unexpected(*args, **kwargs):
         raise AssertionError("No network call is allowed without the key")
     monkeypatch.setattr(ai.httpx, "post", unexpected)
     assert lookup(client, use_ai=True)["explanation_mode"] == "template"
     assert not client.get("/api/health").json()["ai_configured"]
+
+
+@pytest.mark.parametrize("status,reason", [(401,"authentication"), (403,"authentication"), (429,"rate_limit_or_quota"), (500,"provider_error")])
+def test_openai_errors_are_safe(client, monkeypatch, status, reason):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-only-placeholder")
+    def post(url, **kwargs):
+        return ai.httpx.Response(status, request=ai.httpx.Request("POST", url), json={"error":{"message":"secret-upstream-detail"}})
+    monkeypatch.setattr(ai.httpx, "post", post)
+    result=lookup(client, use_ai=True)
+    assert result["explanation_mode"] == "template"
+    assert result["ai_error"] == reason
+    assert "secret-upstream-detail" not in json.dumps(result)
+    assert "test-only-placeholder" not in json.dumps(result)
+
+
+def test_provider_key_is_not_sent_to_custom_url(client, monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-only-placeholder")
+    monkeypatch.setenv("AI_PROVIDER", "unsupported")
+    monkeypatch.setenv("AI_API_URL", "https://example.invalid")
+    def unexpected(*args, **kwargs):
+        raise AssertionError("Unsupported providers must not receive keys")
+    monkeypatch.setattr(ai.httpx, "post", unexpected)
+    assert lookup(client, use_ai=True)["ai_error"] == "not_configured"
